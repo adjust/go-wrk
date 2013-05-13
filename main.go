@@ -29,7 +29,8 @@ func main() {
 	countChannel := make(chan bool, *totalCalls*2)
 	benchChannel := make(chan int64, *totalCalls*2)
 	responseChannel := make(chan int, *totalCalls*2)
-
+	benchTime := NewTimer()
+	benchTime.Reset()
 	//TODO check ulimit
 	wg = &sync.WaitGroup{}
 	for i := 0; i < *numConnections; i++ {
@@ -37,7 +38,7 @@ func main() {
 		wg.Add(1)
 	}
 	wg.Wait()
-	CalcStats(benchChannel, responseChannel, url, *numConnections, *numThreads)
+	CalcStats(benchChannel, responseChannel, url, *numConnections, *numThreads, benchTime.Duration())
 }
 
 func StartClient(u, m string, ch chan bool, dka bool, bc chan int64, rc chan int) {
@@ -63,8 +64,9 @@ func StartClient(u, m string, ch chan bool, dka bool, bc chan int64, rc chan int
 	wg.Done()
 }
 
-func CalcStats(benchChannel chan int64, responseChannel chan int, url string, connections, threads int) {
+func CalcStats(benchChannel chan int64, responseChannel chan int, url string, connections, threads int, duration int64) {
 	var total, sum, i int64
+
 	times := make([]int, len(benchChannel))
 	for rt := range benchChannel {
 		sum += rt
@@ -93,14 +95,19 @@ func CalcStats(benchChannel chan int64, responseChannel chan int, url string, co
 			break
 		}
 	}
+	durationFloat := float64(duration)
+	totalFloat := float64(total)
+	sumFloat := float64(sum)
+
 	fmt.Println("==========================BENCHMARK==========================")
 	fmt.Printf("URL:\t\t\t\t%s\n\n", url)
 	fmt.Printf("Used Connections:\t\t%d\n", connections)
 	fmt.Printf("Used Threads:\t\t\t%d\n", threads)
 	fmt.Printf("Total number of calls:\t\t%d\n\n", total)
 	fmt.Println("============================TIMES============================")
-	fmt.Printf("Total time passed:\t\t%ds\n", sum/1E6)
-	fmt.Printf("Avg time per request:\t\t%.2fms\n", float64(sum/total)/1000)
+	fmt.Printf("Total time passed:\t\t%.2fs\n", durationFloat/1E6)
+	fmt.Printf("Avg time per request:\t\t%.2fms\n", sumFloat/totalFloat/1000)
+	fmt.Printf("Requests per second:\t\t%.2f\n", totalFloat/(durationFloat/1E6))
 	fmt.Printf("Median time per request:\t%.2fms\n", float64(times[(total-1)/2])/1000)
 	fmt.Printf("99th percentile time:\t\t%.2fms\n", float64(times[(total/100*99)])/1000)
 	fmt.Printf("Slowest time for request:\t%.2fms\n\n", float64(times[total-1]/1000))
