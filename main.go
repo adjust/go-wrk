@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"runtime"
+	"sort"
 	"sync"
 )
 
@@ -63,15 +64,19 @@ func StartClient(u, m string, ch chan bool, dka bool, bc chan int64, rc chan int
 }
 
 func CalcStats(benchChannel chan int64, responseChannel chan int, url string, connections, threads int) {
-	var total, sum int64
+	var total, sum, i int64
+	times := make([]int, len(benchChannel))
 	for rt := range benchChannel {
-		total++
 		sum += rt
+		times[i] = int(rt)
+		i++
 		if len(benchChannel) == 0 {
 			break
 		}
 	}
-	var resp200, resp300, resp400, resp500 int
+	total = int64(len(times))
+	sort.Ints(times)
+	var resp200, resp300, resp400, resp500 int64
 
 	for res := range responseChannel {
 		switch {
@@ -96,12 +101,12 @@ func CalcStats(benchChannel chan int64, responseChannel chan int, url string, co
 	fmt.Println("============================TIMES============================")
 	fmt.Printf("Total time passed:\t\t%ds\n", sum/1E6)
 	fmt.Printf("Avg time per request:\t\t%.2fms\n", float64(sum/total)/1000)
-	fmt.Printf("Median time per request:\t%.2fms\n", float64(sum/total)/1000)
-	fmt.Printf("99th percentile time:\t\t%.2fms\n", float64(sum/total)/1000)
-	fmt.Printf("Slowest time for request:\t%.2fms\n\n", float64(sum/total)/1000)
+	fmt.Printf("Median time per request:\t%.2fms\n", float64(times[(total-1)/2])/1000)
+	fmt.Printf("99th percentile time:\t\t%.2fms\n", float64(times[(total/100*99)])/1000)
+	fmt.Printf("Slowest time for request:\t%.2fms\n\n", float64(times[total-1]/1000))
 	fmt.Println("==========================RESPONSES==========================")
-	fmt.Printf("20X responses:\t\t%d\n", resp200)
-	fmt.Printf("30X responses:\t\t%d\n", resp300)
-	fmt.Printf("40X responses:\t\t%d\n", resp400)
-	fmt.Printf("50X responses:\t\t%d\n", resp500)
+	fmt.Printf("20X responses:\t\t%d\t(%d%%)\n", resp200, resp200/total*100)
+	fmt.Printf("30X responses:\t\t%d\t(%d%%)\n", resp300, resp300/total*100)
+	fmt.Printf("40X responses:\t\t%d\t(%d%%)\n", resp400, resp400/total*100)
+	fmt.Printf("50X responses:\t\t%d\t(%d%%)\n", resp500, resp500/total*100)
 }
