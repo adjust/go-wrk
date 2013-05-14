@@ -32,12 +32,12 @@ go-wrk [flags] url
 
 with the flags being
 ```
+    -H="User-Agent: ios1.6 go-wrk 0.1 bechmark\nContent-Type: text/html;": the http headers sent separated by '\n'
     -c=100: the max numbers of connections used
     -k=true: if keep-alives are disabled
     -m="GET": the http request method
     -n=1000: the total number of calls processed
     -t=1: the numbers of threads used
-    -u="go-wrk 0.1 bechmark": the user agent sent with each request
 ```
 for example
 ```
