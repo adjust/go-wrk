@@ -37,6 +37,11 @@ with the flags being
     -m="GET": the http request method
     -n=1000: the total number of calls processed
     -t=1: the numbers of threads used
+    -u="go-wrk 0.1 bechmark": the user agent sent with each request
+```
+for example
+```
+go-wrk -c=400 -t=8 -n=100000 http://localhost:8080/index.html
 ```
 
 

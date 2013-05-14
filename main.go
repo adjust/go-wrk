@@ -14,6 +14,7 @@ var (
 	numConnections    = flag.Int("c", 100, "the max numbers of connections used")
 	totalCalls        = flag.Int("n", 1000, "the total number of calls processed")
 	disableKeepAlives = flag.Bool("k", true, "if keep-alives are disabled")
+	userAgent         = flag.String("u", "go-wrk 0.1 bechmark", "the user agent sent with each request")
 )
 
 func init() {
@@ -35,7 +36,7 @@ func main() {
 	//TODO check ulimit
 	wg := &sync.WaitGroup{}
 	for i := 0; i < *numConnections; i++ {
-		go StartClient(url, *method, countChannel, *disableKeepAlives, benchChannel, responseChannel, wg)
+		go StartClient(url, *userAgent, *method, countChannel, *disableKeepAlives, benchChannel, responseChannel, wg)
 		wg.Add(1)
 	}
 	wg.Wait()

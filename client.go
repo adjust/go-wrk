@@ -6,9 +6,10 @@ import (
 	"sync"
 )
 
-func StartClient(u, m string, ch chan bool, dka bool, bc chan int64, rc chan int, wg *sync.WaitGroup) {
+func StartClient(u, ua, m string, ch chan bool, dka bool, bc chan int64, rc chan int, wg *sync.WaitGroup) {
 	tr := &http.Transport{DisableKeepAlives: dka}
 	req, _ := http.NewRequest(m, u, nil)
+	req.Header.Set("User-Agent", ua)
 	timer := NewTimer()
 	for {
 		timer.Reset()
