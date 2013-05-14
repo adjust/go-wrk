@@ -14,7 +14,7 @@ var (
 	numConnections    = flag.Int("c", 100, "the max numbers of connections used")
 	totalCalls        = flag.Int("n", 1000, "the total number of calls processed")
 	disableKeepAlives = flag.Bool("k", true, "if keep-alives are disabled")
-	headers           = flag.String("H", "User-Agent: ios1.6 go-wrk 0.1 bechmark\nContent-Type: text/html;", "the http headers sent separated by '\\n'")
+	headers           = flag.String("H", "User-Agent: go-wrk 0.1 bechmark\nContent-Type: text/html;", "the http headers sent separated by '\\n'")
 )
 
 func init() {
