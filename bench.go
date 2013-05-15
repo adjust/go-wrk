@@ -18,6 +18,7 @@ func bench() []byte {
 	for i := 0; i < *numConnections; i++ {
 		go StartClient(
 			target,
+			*headers,
 			*method,
 			countChannel,
 			*disableKeepAlives,
