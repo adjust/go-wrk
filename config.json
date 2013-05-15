@@ -1,0 +1,7 @@
+{
+    "Port" : "7777",
+    "Nodes" : [
+        "localhost:7777",
+        "localhost:7778"
+    ]
+}
