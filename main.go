@@ -54,6 +54,6 @@ func main() {
 	case "s":
 		slaveNode()
 	default:
-		bench()
+		bench(target)
 	}
 }
