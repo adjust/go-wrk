@@ -1,61 +1,121 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 )
 
-func CalcStats(benchChannel chan int64, responseChannel chan int, url string, connections, threads int, duration int64) {
-	var total, sum, i int64
+type Stats struct {
+	Url         string
+	Connections int
+	Threads     int
+	AvgDuration float64
+	Duration    float64
+	Sum         float64
+	Times       []int
+	Resp200     int64
+	Resp300     int64
+	Resp400     int64
+	Resp500     int64
+}
 
-	times := make([]int, len(benchChannel))
+func CalcStats(benchChannel chan int64, responseChannel chan int, duration int64) []byte {
+	i := 0
+
+	stats := &Stats{
+		Url:         target,
+		Connections: *numConnections,
+		Threads:     *numThreads,
+		Times:       make([]int, len(benchChannel)),
+		Duration:    float64(duration),
+		AvgDuration: float64(duration),
+	}
+
 	for rt := range benchChannel {
-		sum += rt
-		times[i] = int(rt)
+		stats.Sum += float64(rt)
+		stats.Times[i] = int(rt)
 		i++
 		if len(benchChannel) == 0 {
 			break
 		}
 	}
-	total = int64(len(times))
-	sort.Ints(times)
-	var resp200, resp300, resp400, resp500 int64
+	sort.Ints(stats.Times)
 
 	for res := range responseChannel {
 		switch {
 		case res < 300:
-			resp200++
+			stats.Resp200++
 		case res < 400:
-			resp300++
+			stats.Resp300++
 		case res < 500:
-			resp400++
+			stats.Resp400++
 		case res < 600:
-			resp500++
+			stats.Resp500++
 		}
 		if len(responseChannel) == 0 {
 			break
 		}
 	}
 
-	durationFloat := float64(duration)
-	totalFloat := float64(total)
-	sumFloat := float64(sum)
+	PrintStats(stats)
+	b, err := json.Marshal(&stats)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return b
+}
 
+func CalcDistStats(distChan chan string) {
+	if len(distChan) == 0 {
+		return
+	}
+	allStats := &Stats{
+		Url:         target,
+		Connections: *numConnections,
+		Threads:     *numThreads,
+	}
+	statCount := len(distChan)
+	for res := range distChan {
+		var stats Stats
+		err := json.Unmarshal([]byte(res), &stats)
+		if err != nil {
+			fmt.Println(err)
+		}
+		allStats.Duration += stats.Duration
+		allStats.Sum += stats.Sum
+		allStats.Times = append(allStats.Times, stats.Times...)
+		allStats.Resp200 += stats.Resp200
+		allStats.Resp300 += stats.Resp300
+		allStats.Resp400 += stats.Resp400
+		allStats.Resp500 += stats.Resp500
+		if len(distChan) == 0 {
+			break
+		}
+	}
+	allStats.AvgDuration = allStats.Duration / float64(statCount)
+	PrintStats(allStats)
+}
+
+func PrintStats(allStats *Stats) {
+	sort.Ints(allStats.Times)
+	total := float64(len(allStats.Times))
+	totalInt := int64(total)
 	fmt.Println("==========================BENCHMARK==========================")
-	fmt.Printf("URL:\t\t\t\t%s\n\n", url)
-	fmt.Printf("Used Connections:\t\t%d\n", connections)
-	fmt.Printf("Used Threads:\t\t\t%d\n", threads)
-	fmt.Printf("Total number of calls:\t\t%d\n\n", total)
+	fmt.Printf("URL:\t\t\t\t%s\n\n", allStats.Url)
+	fmt.Printf("Used Connections:\t\t%d\n", allStats.Connections)
+	fmt.Printf("Used Threads:\t\t\t%d\n", allStats.Threads)
+	fmt.Printf("Total number of calls:\t\t%d\n\n", totalInt)
 	fmt.Println("============================TIMES============================")
-	fmt.Printf("Total time passed:\t\t%.2fs\n", durationFloat/1E6)
-	fmt.Printf("Avg time per request:\t\t%.2fms\n", sumFloat/totalFloat/1000)
-	fmt.Printf("Requests per second:\t\t%.2f\n", totalFloat/(durationFloat/1E6))
-	fmt.Printf("Median time per request:\t%.2fms\n", float64(times[(total-1)/2])/1000)
-	fmt.Printf("99th percentile time:\t\t%.2fms\n", float64(times[(total/100*99)])/1000)
-	fmt.Printf("Slowest time for request:\t%.2fms\n\n", float64(times[total-1]/1000))
+	fmt.Printf("Total time passed:\t\t%.2fs\n", allStats.AvgDuration/1E6)
+	fmt.Printf("Avg time per request:\t\t%.2fms\n", allStats.Sum/total/1000)
+	fmt.Printf("Requests per second:\t\t%.2f\n", total/(allStats.AvgDuration/1E6))
+	fmt.Printf("Median time per request:\t%.2fms\n", float64(allStats.Times[(totalInt-1)/2])/1000)
+	fmt.Printf("99th percentile time:\t\t%.2fms\n", float64(allStats.Times[(totalInt/100*99)])/1000)
+	fmt.Printf("Slowest time for request:\t%.2fms\n\n", float64(allStats.Times[totalInt-1]/1000))
 	fmt.Println("==========================RESPONSES==========================")
-	fmt.Printf("20X responses:\t\t%d\t(%d%%)\n", resp200, resp200/total*100)
-	fmt.Printf("30X responses:\t\t%d\t(%d%%)\n", resp300, resp300/total*100)
-	fmt.Printf("40X responses:\t\t%d\t(%d%%)\n", resp400, resp400/total*100)
-	fmt.Printf("50X responses:\t\t%d\t(%d%%)\n", resp500, resp500/total*100)
+	fmt.Printf("20X allStats.Responses:\t\t%d\t(%d%%)\n", allStats.Resp200, allStats.Resp200/totalInt*100)
+	fmt.Printf("30X allStats.Responses:\t\t%d\t(%d%%)\n", allStats.Resp300, allStats.Resp300/totalInt*100)
+	fmt.Printf("40X allStats.Responses:\t\t%d\t(%d%%)\n", allStats.Resp400, allStats.Resp400/totalInt*100)
+	fmt.Printf("50X allStats.Responses:\t\t%d\t(%d%%)\n", allStats.Resp500, allStats.Resp500/totalInt*100)
 }

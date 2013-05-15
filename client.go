@@ -8,6 +8,7 @@ import (
 )
 
 func StartClient(u, h, m string, ch chan bool, dka bool, bc chan int64, rc chan int, wg *sync.WaitGroup) {
+	defer wg.Done()
 	tr := &http.Transport{DisableKeepAlives: dka}
 	req, _ := http.NewRequest(m, u, nil)
 	sets := strings.Split(h, "\n")
@@ -33,5 +34,4 @@ func StartClient(u, h, m string, ch chan bool, dka bool, bc chan int64, rc chan 
 		bc <- timer.Duration()
 		resp.Body.Close()
 	}
-	wg.Done()
 }
