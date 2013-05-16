@@ -49,7 +49,6 @@ func CalcStats(responseChannel chan response, duration int64) []byte {
 			break
 		}
 	}
-	sort.Ints(stats.Times)
 
 	PrintStats(stats)
 	b, err := json.Marshal(&stats)
