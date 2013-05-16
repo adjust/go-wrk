@@ -10,7 +10,10 @@ import (
 func StartClient(u, h, m string, ch chan bool, dka bool, bc chan int64, rc chan int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	tr := &http.Transport{DisableKeepAlives: dka}
-	req, _ := http.NewRequest(m, u, nil)
+	req, err := http.NewRequest(m, u, nil)
+	if err != nil {
+		panic(err)
+	}
 	sets := strings.Split(h, "\n")
 	for i := range sets {
 		split := strings.SplitN(sets[i], ":", 2)
