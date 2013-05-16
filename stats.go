@@ -20,43 +20,36 @@ type Stats struct {
 	Resp500     int64
 }
 
-func CalcStats(benchChannel chan int64, responseChannel chan int, duration int64) []byte {
-	i := 0
+func CalcStats(responseChannel chan response, duration int64) []byte {
 
 	stats := &Stats{
 		Url:         target,
 		Connections: *numConnections,
 		Threads:     *numThreads,
-		Times:       make([]int, len(benchChannel)),
+		Times:       make([]int, 0),
 		Duration:    float64(duration),
 		AvgDuration: float64(duration),
 	}
 
-	for rt := range benchChannel {
-		stats.Sum += float64(rt)
-		stats.Times[i] = int(rt)
-		i++
-		if len(benchChannel) == 0 {
-			break
-		}
-	}
-	sort.Ints(stats.Times)
+	for r := range responseChannel {
+		stats.Sum += float64(r.duration)
+		stats.Times = append(stats.Times, int(r.duration))
 
-	for res := range responseChannel {
 		switch {
-		case res < 300:
+		case r.code < 300:
 			stats.Resp200++
-		case res < 400:
+		case r.code < 400:
 			stats.Resp300++
-		case res < 500:
+		case r.code < 500:
 			stats.Resp400++
-		case res < 600:
+		case r.code < 600:
 			stats.Resp500++
 		}
 		if len(responseChannel) == 0 {
 			break
 		}
 	}
+	sort.Ints(stats.Times)
 
 	PrintStats(stats)
 	b, err := json.Marshal(&stats)

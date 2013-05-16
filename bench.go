@@ -4,10 +4,14 @@ import (
 	"sync"
 )
 
+// type response represents the result of an HTTP request
+type response struct {
+	code           int
+	duration, size int64
+}
+
 func bench() []byte {
-	responseChannel := make(chan int, *totalCalls*2)
-	countChannel := make(chan bool, *totalCalls*2)
-	benchChannel := make(chan int64, *totalCalls*2)
+	responseChannel := make(chan response, *totalCalls*2)
 
 	benchTime := NewTimer()
 	benchTime.Reset()
@@ -20,19 +24,15 @@ func bench() []byte {
 			target,
 			*headers,
 			*method,
-			countChannel,
 			*disableKeepAlives,
-			benchChannel,
 			responseChannel,
 			wg,
 		)
 		wg.Add(1)
 	}
-
 	wg.Wait()
 
 	result := CalcStats(
-		benchChannel,
 		responseChannel,
 		benchTime.Duration(),
 	)

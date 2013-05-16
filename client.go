@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
-	"io/ioutil"
-	"io"
 	"sync"
 )
 
-func StartClient(u, h, m string, ch chan bool, dka bool, bc chan int64, rc chan int, wg *sync.WaitGroup) {
+func StartClient(u, h, m string, dka bool, rc chan response, wg *sync.WaitGroup) {
 	defer wg.Done()
 	tr := &http.Transport{DisableKeepAlives: dka}
 	req, err := http.NewRequest(m, u, nil)
@@ -31,16 +31,14 @@ func StartClient(u, h, m string, ch chan bool, dka bool, bc chan int64, rc chan 
 			fmt.Println(err)
 			continue
 		}
-		if len(ch) >= *totalCalls {
+		if len(rc) >= *totalCalls {
 			break
 		}
-		_,err = io.Copy(ioutil.Discard, resp.Body)
+		size, err := io.Copy(ioutil.Discard, resp.Body)
 		if err != nil {
 			fmt.Println("error reading response:", err)
 		}
-		ch <- true
-		rc <- resp.StatusCode
-		bc <- timer.Duration()
+		rc <- response{resp.StatusCode, timer.Duration(), size}
 		resp.Body.Close()
 	}
 }
