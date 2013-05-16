@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"io/ioutil"
+	"io"
 	"sync"
 )
 
@@ -31,6 +33,10 @@ func StartClient(u, h, m string, ch chan bool, dka bool, bc chan int64, rc chan 
 		}
 		if len(ch) >= *totalCalls {
 			break
+		}
+		_,err = io.Copy(ioutil.Discard, resp.Body)
+		if err != nil {
+			fmt.Println("error reading response:", err)
 		}
 		ch <- true
 		rc <- resp.StatusCode
