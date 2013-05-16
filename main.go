@@ -24,7 +24,7 @@ var (
 	configFile        = flag.String("f", "", "json config file")
 	config            Config
 	target            string
-	headers           = flag.String("H", "User-Agent: go-wrk 0.1 bechmark\nContent-Type: text/html;", "the http headers sent separated by '\\n'")
+	headers           = flag.String("H", "User-Agent: go-wrk 0.1 bechmark\nContent-Type: text/html", "the http headers sent separated by '\\n'")
 )
 
 func init() {
