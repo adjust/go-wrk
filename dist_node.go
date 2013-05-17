@@ -30,5 +30,6 @@ func rootHandler(w http.ResponseWriter, req *http.Request) {
 	*totalCalls, _ = strconv.Atoi(values.Get("n"))
 	*disableKeepAlives, _ = strconv.ParseBool(values.Get("k"))
 	toCall, _ := url.QueryUnescape(values.Get("url"))
+	fmt.Println("going to call:", toCall)
 	fmt.Fprintf(w, string(bench(toCall)))
 }

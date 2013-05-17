@@ -31,7 +31,6 @@ func runChild(distChan chan string, wg *sync.WaitGroup, node string) {
 		*disableKeepAlives,
 		url.QueryEscape(url.QueryEscape(target)),
 	)
-	fmt.Println(toCall)
 	resp, err := http.Get(toCall)
 	if err != nil {
 		fmt.Println(err)
