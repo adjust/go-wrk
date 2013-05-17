@@ -30,6 +30,7 @@ func bench() []byte {
 			*headers,
 			*method,
 			*disableKeepAlives,
+			*disableCompression,
 			work,
 			responses,
 			wg,

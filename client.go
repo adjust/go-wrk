@@ -10,9 +10,9 @@ import (
 	"time"
 )
 
-func StartClient(u, h, m string, dka bool, work chan struct{}, rc chan response, wg *sync.WaitGroup) {
+func StartClient(u, h, m string, dka bool, dgzip bool, work chan struct{}, rc chan response, wg *sync.WaitGroup) {
 	defer wg.Done()
-	tr := &http.Transport{DisableKeepAlives: dka}
+	tr := &http.Transport{DisableKeepAlives: dka, DisableCompression: dgzip}
 	req, err := http.NewRequest(m, u, nil)
 	if err != nil {
 		panic(err)
