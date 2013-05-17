@@ -21,18 +21,18 @@ func masterNode() {
 
 func runChild(distChan chan string, wg *sync.WaitGroup, node string) {
 	defer wg.Done()
-	resp, err := http.Get(
-		fmt.Sprintf(
-			"http://%s/t=%d&m=%s&c=%d&n=%d&k=%t&url=%s",
-			node,
-			*numThreads,
-			*method,
-			*numConnections,
-			*totalCalls,
-			*disableKeepAlives,
-			url.QueryEscape(target),
-		),
+	toCall := fmt.Sprintf(
+		"http://%s/t=%d&m=%s&c=%d&n=%d&k=%t&url=%s",
+		node,
+		*numThreads,
+		*method,
+		*numConnections,
+		*totalCalls,
+		*disableKeepAlives,
+		url.QueryEscape(url.QueryEscape(target)),
 	)
+	fmt.Println(toCall)
+	resp, err := http.Get(toCall)
 	if err != nil {
 		fmt.Println(err)
 		return
