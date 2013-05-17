@@ -1,1 +1,6 @@
-{"Nodes":["ec2-46-137-41-179.eu-west-1.compute.amazonaws.com:7777","ec2-54-228-127-42.eu-west-1.compute.amazonaws.com:7777","ec2-46-137-68-143.eu-west-1.compute.amazonaws.com:7777","ec2-54-228-125-101.eu-west-1.compute.amazonaws.com:7777","ec2-79-125-65-101.eu-west-1.compute.amazonaws.com:7777","ec2-54-247-157-223.eu-west-1.compute.amazonaws.com:7777","ec2-54-216-37-26.eu-west-1.compute.amazonaws.com:7777","ec2-54-228-124-20.eu-west-1.compute.amazonaws.com:7777","ec2-54-246-72-29.eu-west-1.compute.amazonaws.com:7777","ec2-46-51-144-122.eu-west-1.compute.amazonaws.com:7777","ec2-54-228-153-122.eu-west-1.compute.amazonaws.com:7777","ec2-54-216-46-183.eu-west-1.compute.amazonaws.com:7777","ec2-54-228-145-35.eu-west-1.compute.amazonaws.com:7777","ec2-54-228-108-103.eu-west-1.compute.amazonaws.com:7777","ec2-54-228-76-112.eu-west-1.compute.amazonaws.com:7777","ec2-54-228-102-95.eu-west-1.compute.amazonaws.com:7777","ec2-54-228-24-121.eu-west-1.compute.amazonaws.com:7777","ec2-176-34-68-112.eu-west-1.compute.amazonaws.com:7777","ec2-46-137-50-124.eu-west-1.compute.amazonaws.com:7777","ec2-176-34-74-69.eu-west-1.compute.amazonaws.com:7777"],"Port":"7777"}
+{
+    "Port" : "7777",
+    "Nodes" : [
+        "192.168.178.121:7777"
+    ]
+}

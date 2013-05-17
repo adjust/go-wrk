@@ -2,44 +2,38 @@ package main
 
 import (
 	"sync"
-	"time"
 )
 
-// type response represents the result of an HTTP request
-type response struct {
-	code     int
-	duration time.Duration
-	size     int64
-}
+func bench(toCall string) []byte {
+	responseChannel := make(chan int, *totalCalls*2)
+	countChannel := make(chan bool, *totalCalls*2)
+	benchChannel := make(chan int64, *totalCalls*2)
 
-func bench() []byte {
-	work := make(chan struct{}, *totalCalls)
-	responses := make(chan response)
-
+	benchTime := NewTimer()
+	benchTime.Reset()
 	//TODO check ulimit
 	wg := &sync.WaitGroup{}
 
-	for i := 0; i < *totalCalls; i++ {
-		work <- struct{}{}
-	}
-	close(work)
-	t1 := time.Now()
 	for i := 0; i < *numConnections; i++ {
 		go StartClient(
 			toCall,
 			*headers,
 			*method,
+			countChannel,
 			*disableKeepAlives,
-			*disableCompression,
-			work,
-			responses,
+			benchChannel,
+			responseChannel,
 			wg,
 		)
 		wg.Add(1)
 	}
-	go func() {
-		wg.Wait()
-		close(responses)
-	}()
-	return CalcStats(responses, t1)
+
+	wg.Wait()
+
+	result := CalcStats(
+		benchChannel,
+		responseChannel,
+		benchTime.Duration(),
+	)
+	return result
 }

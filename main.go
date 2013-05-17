@@ -15,17 +15,16 @@ type Config struct {
 }
 
 var (
-	numThreads         = flag.Int("t", 1, "the numbers of threads used")
-	method             = flag.String("m", "GET", "the http request method")
-	numConnections     = flag.Int("c", 100, "the max numbers of connections used")
-	totalCalls         = flag.Int("n", 1000, "the total number of calls processed")
-	disableKeepAlives  = flag.Bool("k", true, "if keep-alives are disabled")
-	disableCompression = flag.Bool("z", true, "if compression (gzip) is disabled")
-	dist               = flag.String("d", "", "dist mode")
-	configFile         = flag.String("f", "", "json config file")
-	config             Config
-	target             string
-	headers            = flag.String("H", "User-Agent: go-wrk 0.1 bechmark\nContent-Type: text/html", "the http headers sent separated by '\\n'")
+	numThreads        = flag.Int("t", 1, "the numbers of threads used")
+	method            = flag.String("m", "GET", "the http request method")
+	numConnections    = flag.Int("c", 100, "the max numbers of connections used")
+	totalCalls        = flag.Int("n", 1000, "the total number of calls processed")
+	disableKeepAlives = flag.Bool("k", true, "if keep-alives are disabled")
+	dist              = flag.String("d", "", "dist mode")
+	configFile        = flag.String("f", "", "json config file")
+	config            Config
+	target            string
+	headers           = flag.String("H", "User-Agent: go-wrk 0.1 bechmark\nContent-Type: text/html;", "the http headers sent separated by '\\n'")
 )
 
 func init() {
