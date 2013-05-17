@@ -4,60 +4,54 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"time"
 )
 
 type Stats struct {
 	Url         string
 	Connections int
 	Threads     int
-	AvgDuration float64
-	Duration    float64
-	Sum         float64
+	AvgDuration time.Duration
+	Duration    time.Duration
+	Sum         time.Duration
 	Times       []int
+	Transferred int64
 	Resp200     int64
 	Resp300     int64
 	Resp400     int64
 	Resp500     int64
 }
 
-func CalcStats(benchChannel chan int64, responseChannel chan int, duration int64) []byte {
-	i := 0
+func CalcStats(responseChannel chan response, startTime time.Time) []byte {
 
 	stats := &Stats{
 		Url:         target,
 		Connections: *numConnections,
 		Threads:     *numThreads,
-		Times:       make([]int, len(benchChannel)),
-		Duration:    float64(duration),
-		AvgDuration: float64(duration),
+		Times:       make([]int, 0),
 	}
 
-	for rt := range benchChannel {
-		stats.Sum += float64(rt)
-		stats.Times[i] = int(rt)
-		i++
-		if len(benchChannel) == 0 {
-			break
-		}
-	}
-	sort.Ints(stats.Times)
+	for r := range responseChannel {
+		stats.Sum += r.duration
+		stats.Times = append(stats.Times, int(r.duration))
+		stats.Transferred += r.size
 
-	for res := range responseChannel {
 		switch {
-		case res < 300:
+		case r.code < 300:
 			stats.Resp200++
-		case res < 400:
+		case r.code < 400:
 			stats.Resp300++
-		case res < 500:
+		case r.code < 500:
 			stats.Resp400++
-		case res < 600:
+		case r.code < 600:
 			stats.Resp500++
 		}
-		if len(responseChannel) == 0 {
-			break
-		}
 	}
-
+	// done ranging so requests are done
+	stats.Duration = time.Now().Sub(startTime)
+	if len(stats.Times) > 0 {
+		stats.AvgDuration = time.Duration(stats.Duration.Nanoseconds() / int64(len(stats.Times)))
+	}
 	PrintStats(stats)
 	b, err := json.Marshal(&stats)
 	if err != nil {
@@ -83,7 +77,6 @@ func CalcDistStats(distChan chan string) {
 			fmt.Println(err)
 		}
 		allStats.Duration += stats.Duration
-		allStats.Sum += stats.Sum
 		allStats.Times = append(allStats.Times, stats.Times...)
 		allStats.Resp200 += stats.Resp200
 		allStats.Resp300 += stats.Resp300
@@ -93,7 +86,7 @@ func CalcDistStats(distChan chan string) {
 			break
 		}
 	}
-	allStats.AvgDuration = allStats.Duration / float64(statCount)
+	allStats.AvgDuration = time.Duration(allStats.Duration.Nanoseconds() / int64(statCount))
 	PrintStats(allStats)
 }
 
@@ -105,14 +98,19 @@ func PrintStats(allStats *Stats) {
 	fmt.Printf("URL:\t\t\t\t%s\n\n", allStats.Url)
 	fmt.Printf("Used Connections:\t\t%d\n", allStats.Connections)
 	fmt.Printf("Used Threads:\t\t\t%d\n", allStats.Threads)
-	fmt.Printf("Total number of calls:\t\t%d\n\n", totalInt)
+	fmt.Printf("Total number of calls:\t\t%d\n", totalInt)
+	fmt.Println("")
 	fmt.Println("============================TIMES============================")
-	fmt.Printf("Total time passed:\t\t%.2fs\n", allStats.AvgDuration/1E6)
-	fmt.Printf("Avg time per request:\t\t%.2fms\n", allStats.Sum/total/1000)
-	fmt.Printf("Requests per second:\t\t%.2f\n", total/(allStats.AvgDuration/1E6))
-	fmt.Printf("Median time per request:\t%.2fms\n", float64(allStats.Times[(totalInt-1)/2])/1000)
-	fmt.Printf("99th percentile time:\t\t%.2fms\n", float64(allStats.Times[(totalInt/100*99)])/1000)
-	fmt.Printf("Slowest time for request:\t%.2fms\n\n", float64(allStats.Times[totalInt-1]/1000))
+	fmt.Printf("Total time passed:\t\t%.2fs\n", allStats.Duration.Seconds())
+	fmt.Printf("Avg time per request:\t\t%.2fms\n", float64(allStats.Sum)/total/1e6)
+	fmt.Printf("Requests per second:\t\t%.2f\n", total/allStats.Duration.Seconds())
+	fmt.Printf("Median time per request:\t%.2fms\n", float64(allStats.Times[(totalInt-1)/2]/1e6))
+	fmt.Printf("99th percentile time:\t\t%.2fms\n", float64(allStats.Times[(totalInt/100*99)])/1e6)
+	fmt.Printf("Slowest time for request:\t%.2fms\n", float64(allStats.Times[totalInt-1]/1e6))
+	mb := float64(allStats.Transferred) / 1024 / 1024
+	fmt.Printf("Total Body bytes transferred:\t%.2fMB\n", mb)
+	fmt.Printf("Transfer rate:\t\t\t%.2fMB/s\n", mb/float64(allStats.Duration.Seconds()))
+	fmt.Println("")
 	fmt.Println("==========================RESPONSES==========================")
 	fmt.Printf("20X allStats.Responses:\t\t%d\t(%d%%)\n", allStats.Resp200, allStats.Resp200/totalInt*100)
 	fmt.Printf("30X allStats.Responses:\t\t%d\t(%d%%)\n", allStats.Resp300, allStats.Resp300/totalInt*100)

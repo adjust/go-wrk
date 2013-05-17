@@ -2,39 +2,44 @@ package main
 
 import (
 	"sync"
+	"time"
 )
 
-func bench() []byte {
-	responseChannel := make(chan int, *totalCalls*2)
-	countChannel := make(chan bool, *totalCalls*2)
-	benchChannel := make(chan int64, *totalCalls*2)
+// type response represents the result of an HTTP request
+type response struct {
+	code     int
+	duration time.Duration
+	size     int64
+}
 
-	benchTime := NewTimer()
-	benchTime.Reset()
+func bench() []byte {
+	work := make(chan struct{}, *totalCalls)
+	responses := make(chan response)
 
 	//TODO check ulimit
 	wg := &sync.WaitGroup{}
 
+	for i := 0; i < *totalCalls; i++ {
+		work <- struct{}{}
+	}
+	close(work)
+	t1 := time.Now()
 	for i := 0; i < *numConnections; i++ {
 		go StartClient(
 			target,
 			*headers,
 			*method,
-			countChannel,
 			*disableKeepAlives,
-			benchChannel,
-			responseChannel,
+			*disableCompression,
+			work,
+			responses,
 			wg,
 		)
 		wg.Add(1)
 	}
-
-	wg.Wait()
-
-	result := CalcStats(
-		benchChannel,
-		responseChannel,
-		benchTime.Duration(),
-	)
-	return result
+	go func() {
+		wg.Wait()
+		close(responses)
+	}()
+	return CalcStats(responses, t1)
 }
