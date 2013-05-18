@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-func masterNode() {
+func MasterNode() {
 	distChannel := make(chan string, len(config.Nodes)*2)
 	wg := &sync.WaitGroup{}
 	for _, node := range config.Nodes {

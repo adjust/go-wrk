@@ -4,10 +4,8 @@ import (
 	"sync"
 )
 
-func bench(toCall string) []byte {
-	responseChannel := make(chan int, *totalCalls*2)
-	countChannel := make(chan bool, *totalCalls*2)
-	benchChannel := make(chan int64, *totalCalls*2)
+func SingleNode(toCall string) []byte {
+	responseChannel := make(chan *Response, *totalCalls*2)
 
 	benchTime := NewTimer()
 	benchTime.Reset()
@@ -19,11 +17,10 @@ func bench(toCall string) []byte {
 			toCall,
 			*headers,
 			*method,
-			countChannel,
 			*disableKeepAlives,
-			benchChannel,
 			responseChannel,
 			wg,
+			*totalCalls,
 		)
 		wg.Add(1)
 	}
@@ -31,7 +28,6 @@ func bench(toCall string) []byte {
 	wg.Wait()
 
 	result := CalcStats(
-		benchChannel,
 		responseChannel,
 		benchTime.Duration(),
 	)

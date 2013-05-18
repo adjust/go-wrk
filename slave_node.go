@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func slaveNode() {
+func SlaveNode() {
 	http.HandleFunc("/", rootHandler)
 	err := http.ListenAndServe(
 		fmt.Sprintf(":%s", config.Port),
@@ -30,5 +30,5 @@ func rootHandler(w http.ResponseWriter, req *http.Request) {
 	*totalCalls, _ = strconv.Atoi(values.Get("n"))
 	*disableKeepAlives, _ = strconv.ParseBool(values.Get("k"))
 	toCall, _ := url.QueryUnescape(values.Get("url"))
-	fmt.Fprintf(w, string(bench(toCall)))
+	fmt.Fprintf(w, string(SingleNode(toCall)))
 }

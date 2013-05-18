@@ -50,10 +50,10 @@ func readConfig() {
 func main() {
 	switch *dist {
 	case "m":
-		masterNode()
+		MasterNode()
 	case "s":
-		slaveNode()
+		SlaveNode()
 	default:
-		bench(target)
+		SingleNode(target)
 	}
 }
