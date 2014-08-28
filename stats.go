@@ -36,6 +36,8 @@ func CalcStats(responseChannel chan *Response, duration int64) []byte {
 	i := 0
 	for res := range responseChannel {
 		switch {
+		case res.StatusCode < 200:
+			// error
 		case res.StatusCode < 300:
 			stats.Resp200++
 		case res.StatusCode < 400:
@@ -125,10 +127,10 @@ func PrintStats(allStats *Stats) {
 	fmt.Printf("Avg responese body per request:\t\t%.2fms\n", float64(allStats.Transfered)/total)
 	fmt.Printf("Transfer rate per second:\t\t%.2f\n", float64(allStats.Transfered)/(allStats.AvgDuration/1E6))
 	fmt.Println("==========================RESPONSES==========================")
-	fmt.Printf("20X Responses:\t\t%d\t(%d%%)\n", allStats.Resp200, allStats.Resp200/totalInt*100)
-	fmt.Printf("30X Responses:\t\t%d\t(%d%%)\n", allStats.Resp300, allStats.Resp300/totalInt*100)
-	fmt.Printf("40X Responses:\t\t%d\t(%d%%)\n", allStats.Resp400, allStats.Resp400/totalInt*100)
-	fmt.Printf("50X Responses:\t\t%d\t(%d%%)\n", allStats.Resp500, allStats.Resp500/totalInt*100)
-	fmt.Printf("50X Responses:\t\t%d\t(%d%%)\n", allStats.Resp500, allStats.Resp500/totalInt*100)
-	fmt.Printf("Errors:\t\t\t%d\t(%d%%)\n", allStats.Errors, allStats.Errors/totalInt*100)
+	fmt.Printf("20X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp200, float64(allStats.Resp200)/total*1e2)
+	fmt.Printf("30X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp300, float64(allStats.Resp300)/total*1e2)
+	fmt.Printf("40X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp400, float64(allStats.Resp400)/total*1e2)
+	fmt.Printf("50X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp500, float64(allStats.Resp500)/total*1e2)
+	fmt.Printf("50X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp500, float64(allStats.Resp500)/total*1e2)
+	fmt.Printf("Errors:\t\t\t%d\t(%.2f%%)\n", allStats.Errors, float64(allStats.Errors)/total*1e2)
 }
