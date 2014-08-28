@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
@@ -32,7 +33,15 @@ func StartClient(url, heads, meth string, dka bool, responseChan chan *Response,
 		if err != nil {
 			respObj.Error = true
 		} else {
-			respObj.Size = resp.ContentLength
+			if resp.ContentLength < 0 { // -1 if the length is unknown
+				data, err := ioutil.ReadAll(resp.Body)
+				if err == nil {
+					respObj.Size = int64(len(data))
+				}
+			} else {
+				respObj.Size = resp.ContentLength
+			}
+			respObj.StatusCode = resp.StatusCode
 			resp.Body.Close()
 		}
 
