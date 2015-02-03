@@ -1,17 +1,51 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 )
 
-func StartClient(url, heads, meth string, dka bool, responseChan chan *Response, waitGroup *sync.WaitGroup, tc int) {
+func StartClient(url_, heads, meth string, dka bool, responseChan chan *Response, waitGroup *sync.WaitGroup, tc int) {
 	defer waitGroup.Done()
 
-	tr := &http.Transport{DisableKeepAlives: dka}
-	req, _ := http.NewRequest(meth, url, nil)
+	var tr *http.Transport
+
+	u, err := url.Parse(url_)
+
+	if err == nil && u.Scheme == "https" {
+		// Load client cert
+		cert, err := tls.LoadX509KeyPair(*certFile, *keyFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Load CA cert
+		caCert, err := ioutil.ReadFile(*caFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+
+		// Setup HTTPS client
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			RootCAs:      caCertPool,
+		}
+		tlsConfig.BuildNameToCertificate()
+
+		tr = &http.Transport{TLSClientConfig: tlsConfig, DisableKeepAlives: dka}
+	} else {
+		tr = &http.Transport{DisableKeepAlives: dka}
+	}
+
+	req, _ := http.NewRequest(meth, url_, nil)
 	sets := strings.Split(heads, "\n")
 
 	//Split incoming header string by \n and build header pairs

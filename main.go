@@ -25,6 +25,9 @@ var (
 	config            Config
 	target            string
 	headers           = flag.String("H", "User-Agent: go-wrk 0.1 bechmark\nContent-Type: text/html;", "the http headers sent separated by '\\n'")
+	certFile          = flag.String("cert", "someCertFile", "A PEM eoncoded certificate file.")
+	keyFile           = flag.String("key", "someKeyFile", "A PEM encoded private key file.")
+	caFile            = flag.String("CA", "someCertCAFile", "A PEM eoncoded CA's certificate file.")
 )
 
 func init() {
