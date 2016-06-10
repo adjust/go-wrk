@@ -19,26 +19,33 @@ func StartClient(url_, heads, meth string, dka bool, responseChan chan *Response
 	u, err := url.Parse(url_)
 
 	if err == nil && u.Scheme == "https" {
-		// Load client cert
-		cert, err := tls.LoadX509KeyPair(*certFile, *keyFile)
-		if err != nil {
-			log.Fatal(err)
-		}
+		var tlsConfig *tls.Config
+		if *insecure {
+			tlsConfig = &tls.Config{
+				InsecureSkipVerify: true,
+			}
+		} else {
+			// Load client cert
+			cert, err := tls.LoadX509KeyPair(*certFile, *keyFile)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		// Load CA cert
-		caCert, err := ioutil.ReadFile(*caFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
+			// Load CA cert
+			caCert, err := ioutil.ReadFile(*caFile)
+			if err != nil {
+				log.Fatal(err)
+			}
+			caCertPool := x509.NewCertPool()
+			caCertPool.AppendCertsFromPEM(caCert)
 
-		// Setup HTTPS client
-		tlsConfig := &tls.Config{
-			Certificates: []tls.Certificate{cert},
-			RootCAs:      caCertPool,
+			// Setup HTTPS client
+			tlsConfig = &tls.Config{
+				Certificates: []tls.Certificate{cert},
+				RootCAs:      caCertPool,
+			}
+			tlsConfig.BuildNameToCertificate()
 		}
-		tlsConfig.BuildNameToCertificate()
 
 		tr = &http.Transport{TLSClientConfig: tlsConfig, DisableKeepAlives: dka}
 	} else {

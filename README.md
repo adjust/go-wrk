@@ -35,6 +35,7 @@ with the flags being
     -H="User-Agent: go-wrk 0.1 bechmark\nContent-Type: text/html;": the http headers sent separated by '\n'
     -c=100: the max numbers of connections used
     -k=true: if keep-alives are disabled
+    -i=false: if TLS security checks are disabled
     -m="GET": the http request method
     -n=1000: the total number of calls processed
     -t=1: the numbers of threads used
