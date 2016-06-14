@@ -132,6 +132,5 @@ func PrintStats(allStats *Stats) {
 	fmt.Printf("30X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp300, float64(allStats.Resp300)/total*1e2)
 	fmt.Printf("40X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp400, float64(allStats.Resp400)/total*1e2)
 	fmt.Printf("50X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp500, float64(allStats.Resp500)/total*1e2)
-	fmt.Printf("50X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp500, float64(allStats.Resp500)/total*1e2)
 	fmt.Printf("Errors:\t\t\t%d\t(%.2f%%)\n", allStats.Errors, float64(allStats.Errors)/total*1e2)
 }
