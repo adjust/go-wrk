@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-func StartClient(url_, heads, meth string, dka bool, responseChan chan *Response, waitGroup *sync.WaitGroup, tc int) {
+func StartClient(url_, heads, requestBody string, meth string, dka bool, responseChan chan *Response, waitGroup *sync.WaitGroup, tc int) {
 	defer waitGroup.Done()
 
 	var tr *http.Transport
@@ -52,7 +52,9 @@ func StartClient(url_, heads, meth string, dka bool, responseChan chan *Response
 		tr = &http.Transport{DisableKeepAlives: dka}
 	}
 
-	req, _ := http.NewRequest(meth, url_, nil)
+	requestBodyReader := strings.NewReader(requestBody)
+
+	req, _ := http.NewRequest(meth, url_, requestBodyReader)
 	sets := strings.Split(heads, "\n")
 
 	//Split incoming header string by \n and build header pairs

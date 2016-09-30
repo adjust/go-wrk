@@ -17,6 +17,7 @@ type Config struct {
 var (
 	numThreads        = flag.Int("t", 1, "the numbers of threads used")
 	method            = flag.String("m", "GET", "the http request method")
+	requestBody       = flag.String("b", "", "the http requst body")
 	numConnections    = flag.Int("c", 100, "the max numbers of connections used")
 	totalCalls        = flag.Int("n", 1000, "the total number of calls processed")
 	disableKeepAlives = flag.Bool("k", true, "if keep-alives are disabled")
