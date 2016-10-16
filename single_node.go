@@ -16,6 +16,7 @@ func SingleNode(toCall string) []byte {
 		go StartClient(
 			toCall,
 			*headers,
+			*requestBody,
 			*method,
 			*disableKeepAlives,
 			responseChannel,
