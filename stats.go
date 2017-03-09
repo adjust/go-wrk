@@ -3,29 +3,31 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"sort"
 )
 
 type Stats struct {
-	Url         string
+	URL         string
 	Connections int
 	Threads     int
 	AvgDuration float64
 	Duration    float64
 	Sum         float64
 	Times       []int
-	Transfered  int64
+	Transferred int64
 	Resp200     int64
 	Resp300     int64
 	Resp400     int64
 	Resp500     int64
+	RespOther   int64
 	Errors      int64
 }
 
 func CalcStats(responseChannel chan *Response, duration int64) []byte {
 
 	stats := &Stats{
-		Url:         target,
+		URL:         target,
 		Connections: *numConnections,
 		Threads:     *numThreads,
 		Times:       make([]int, len(responseChannel)),
@@ -37,7 +39,9 @@ func CalcStats(responseChannel chan *Response, duration int64) []byte {
 	for res := range responseChannel {
 		switch {
 		case res.StatusCode < 200:
-			// error
+			// log for debuging purposes
+			log.Printf("status < 200, %+v\n", res)
+			stats.RespOther++
 		case res.StatusCode < 300:
 			stats.Resp200++
 		case res.StatusCode < 400:
@@ -52,7 +56,7 @@ func CalcStats(responseChannel chan *Response, duration int64) []byte {
 		stats.Times[i] = int(res.Duration)
 		i++
 
-		stats.Transfered += res.Size
+		stats.Transferred += res.Size
 
 		if res.Error {
 			stats.Errors++
@@ -65,7 +69,11 @@ func CalcStats(responseChannel chan *Response, duration int64) []byte {
 
 	sort.Ints(stats.Times)
 
-	PrintStats(stats)
+	if *csvOut {
+		PrintStatsCSV(stats)
+	} else {
+		PrintStats(stats)
+	}
 	b, err := json.Marshal(&stats)
 	if err != nil {
 		fmt.Println(err)
@@ -78,7 +86,7 @@ func CalcDistStats(distChan chan string) {
 		return
 	}
 	allStats := &Stats{
-		Url:         target,
+		URL:         target,
 		Connections: *numConnections,
 		Threads:     *numThreads,
 	}
@@ -96,6 +104,7 @@ func CalcDistStats(distChan chan string) {
 		allStats.Resp300 += stats.Resp300
 		allStats.Resp400 += stats.Resp400
 		allStats.Resp500 += stats.Resp500
+		allStats.RespOther += stats.RespOther
 		allStats.Errors += stats.Errors
 
 		if len(distChan) == 0 {
@@ -103,7 +112,11 @@ func CalcDistStats(distChan chan string) {
 		}
 	}
 	allStats.AvgDuration = allStats.Duration / float64(statCount)
-	PrintStats(allStats)
+	if *csvOut {
+		PrintStatsCSV(allStats)
+	} else {
+		PrintStats(allStats)
+	}
 }
 
 func PrintStats(allStats *Stats) {
@@ -111,7 +124,7 @@ func PrintStats(allStats *Stats) {
 	total := float64(len(allStats.Times))
 	totalInt := int64(total)
 	fmt.Println("==========================BENCHMARK==========================")
-	fmt.Printf("URL:\t\t\t\t%s\n\n", allStats.Url)
+	fmt.Printf("URL:\t\t\t\t%s\n\n", allStats.URL)
 	fmt.Printf("Used Connections:\t\t%d\n", allStats.Connections)
 	fmt.Printf("Used Threads:\t\t\t%d\n", allStats.Threads)
 	fmt.Printf("Total number of calls:\t\t%d\n\n", totalInt)
@@ -123,14 +136,43 @@ func PrintStats(allStats *Stats) {
 	fmt.Printf("99th percentile time:\t\t%.2fms\n", float64(allStats.Times[(totalInt/100*99)])/1000)
 	fmt.Printf("Slowest time for request:\t%.2fms\n\n", float64(allStats.Times[totalInt-1]/1000))
 	fmt.Println("=============================DATA=============================")
-	fmt.Printf("Total response body sizes:\t\t%d\n", allStats.Transfered)
-	fmt.Printf("Avg response body per request:\t\t%.2fms\n", float64(allStats.Transfered)/total)
-	tr := float64(allStats.Transfered) / (allStats.AvgDuration / 1E6)
+	fmt.Printf("Total response body sizes:\t\t%d\n", allStats.Transferred)
+	fmt.Printf("Avg response body per request:\t\t%.2fms\n", float64(allStats.Transferred)/total)
+	tr := float64(allStats.Transferred) / (allStats.AvgDuration / 1E6)
 	fmt.Printf("Transfer rate per second:\t\t%.2f Byte/s (%.2f MByte/s)\n", tr, tr/1E6)
 	fmt.Println("==========================RESPONSES==========================")
 	fmt.Printf("20X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp200, float64(allStats.Resp200)/total*1e2)
 	fmt.Printf("30X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp300, float64(allStats.Resp300)/total*1e2)
 	fmt.Printf("40X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp400, float64(allStats.Resp400)/total*1e2)
 	fmt.Printf("50X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp500, float64(allStats.Resp500)/total*1e2)
+	fmt.Printf("Other Responses:\t%d\t(%.2f%%)\n", allStats.RespOther, float64(allStats.RespOther)/total*1e2)
 	fmt.Printf("Errors:\t\t\t%d\t(%.2f%%)\n", allStats.Errors, float64(allStats.Errors)/total*1e2)
+}
+
+// PrintStatsCSV - print statistics in CSV format
+func PrintStatsCSV(allStats *Stats) {
+	sort.Ints(allStats.Times)
+	total := float64(len(allStats.Times))
+	totalInt := int64(total)
+	fmt.Println(
+		"Benchmark URL,Benchmark Used Connections,Benchmark Used Threads,Benchmark Total number of calls,",
+		"Timings Total time passed,Timings Avg time per request,Timings Requests per second,",
+		"Timings Median time per request,Timings 99th percentile time,Timings Slowest time for request,",
+		"Data Total response body sizes,Data Avg response body per request,Data Transfer rate per second,",
+		"20X Responses,30X Responses,40X Responses,50X Responses, Other Responses,Response Errors",
+	)
+	tr := float64(allStats.Transferred) / (allStats.AvgDuration / 1E6)
+	fmt.Printf(
+		"%s,%d,%d,%d,%.2fs,%.2fms,%.2f,%.2fms,%.2fms,%.2fms,%d,%.2fms,%.2f Byte/s (%.2f MByte/s),%d (%.2f%%),%d (%.2f%%),%d (%.2f%%),%d (%.2f%%),%d (%.2f%%),%d (%.2f%%)\n",
+		allStats.URL, allStats.Connections, allStats.Threads, totalInt, allStats.AvgDuration/1E6,
+		allStats.Sum/total/1000, total/(allStats.AvgDuration/1E6), float64(allStats.Times[(totalInt-1)/2])/1000,
+		float64(allStats.Times[(totalInt/100*99)])/1000, float64(allStats.Times[totalInt-1]/1000),
+		allStats.Transferred, float64(allStats.Transferred)/total, tr, tr/1E6,
+		allStats.Resp200, float64(allStats.Resp200)/total*1e2,
+		allStats.Resp300, float64(allStats.Resp300)/total*1e2,
+		allStats.Resp400, float64(allStats.Resp400)/total*1e2,
+		allStats.Resp500, float64(allStats.Resp500)/total*1e2,
+		allStats.RespOther, float64(allStats.RespOther)/total*1e2,
+		allStats.Errors, float64(allStats.Errors)/total*1e2,
+	)
 }
