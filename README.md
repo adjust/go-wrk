@@ -32,14 +32,32 @@ go-wrk [flags] url
 
 with the flags being
 ```
-    -H="User-Agent: go-wrk 0.1 bechmark\nContent-Type: text/html;": the http headers sent separated by '\n'
-    -c=100: the max numbers of connections used
-    -k=true: if keep-alives are disabled
-    -i=false: if TLS security checks are disabled
-    -m="GET": the http request method
-    -n=1000: the total number of calls processed
-    -t=1: the numbers of threads used
-    -b="" the http requst body
+  -CA string
+    	A PEM eoncoded CA's certificate file. (default "someCertCAFile")
+  -H string
+    	the http headers sent separated by '\n' (default "User-Agent: go-wrk 0.1 benchmark\nContent-Type: text/html;")
+  -b string
+    	the http request body
+  -c int
+    	the max numbers of connections used (default 100)
+  -cert string
+    	A PEM eoncoded certificate file. (default "someCertFile")
+  -csv
+    	Output CSV
+  -d string
+    	dist mode
+  -f string
+    	json config file
+  -i	TLS checks are disabled
+  -k	if keep-alives are disabled (default true)
+  -key string
+    	A PEM encoded private key file. (default "someKeyFile")
+  -m string
+    	the http request method (default "GET")
+  -n int
+    	the total number of calls processed (default 1000)
+  -t int
+    	the numbers of threads used (default 1)
 ```
 for example
 ```
