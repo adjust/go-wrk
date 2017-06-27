@@ -52,21 +52,20 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
 		tr = &http.Transport{DisableKeepAlives: dka}
 	}
 
-	requestBodyReader := strings.NewReader(requestBody)
-
-	req, _ := http.NewRequest(meth, url_, requestBodyReader)
-	sets := strings.Split(heads, "\n")
-
-	//Split incoming header string by \n and build header pairs
-	for i := range sets {
-		split := strings.SplitN(sets[i], ":", 2)
-		if len(split) == 2 {
-			req.Header.Set(split[0], split[1])
-		}
-	}
-
 	timer := NewTimer()
 	for {
+		requestBodyReader := strings.NewReader(requestBody)
+		req, _ := http.NewRequest(meth, url_, requestBodyReader)
+		sets := strings.Split(heads, "\n")
+
+		//Split incoming header string by \n and build header pairs
+		for i := range sets {
+			split := strings.SplitN(sets[i], ":", 2)
+			if len(split) == 2 {
+				req.Header.Set(split[0], split[1])
+			}
+		}
+
 		timer.Reset()
 
 		resp, err := tr.RoundTrip(req)
