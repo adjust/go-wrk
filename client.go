@@ -53,16 +53,16 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
 	}
 
 	timer := NewTimer()
+
+	hdrs := buildHeaders(heads)
+
 	for {
 		requestBodyReader := strings.NewReader(requestBody)
 		req, _ := http.NewRequest(meth, url_, requestBodyReader)
-		sets := strings.Split(heads, "\n")
 
-		//Split incoming header string by \n and build header pairs
-		for i := range sets {
-			split := strings.SplitN(sets[i], ":", 2)
-			if len(split) == 2 {
-				req.Header.Set(split[0], split[1])
+		for key, vals := range hdrs {
+			for _, val := range vals {
+				req.Header.Set(key, val)
 			}
 		}
 
@@ -94,4 +94,25 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
 		}
 		responseChan <- respObj
 	}
+}
+
+// buildHeaders build the HTTP Request headers from the parsed flag -H or
+// from the default header set.
+// The headers are "set" (not added), thus same key values get replaced.
+// Note: if a key has no value, it is not added into the Headers, by original
+// package design.
+func buildHeaders(heads string) http.Header {
+
+	heads = strings.Replace(heads, `\n`, "\n", -1)
+	h := http.Header{}
+
+	sets := strings.Split(heads, "\n")
+	for i := range sets {
+		split := strings.SplitN(sets[i], ":", 2)
+		if len(split) == 2 {
+			h.Set(split[0], split[1])
+		}
+	}
+
+	return h
 }
