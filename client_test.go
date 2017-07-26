@@ -56,7 +56,7 @@ func TestBuildHeaders(t *testing.T) {
 			sort.Strings(tmpHeaders[k])
 		}
 
-		headers := buildHeaders(set.H)
+		headers, _ := buildHeaders(set.H)
 		for _, v := range headers {
 			sort.Strings(v)
 		}

@@ -54,7 +54,7 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
 
 	timer := NewTimer()
 
-	hdrs := buildHeaders(heads)
+	hdrs, _ := buildHeaders(heads)
 
 	for {
 		requestBodyReader := strings.NewReader(requestBody)
@@ -101,7 +101,7 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
 // The headers are "set" (not added), thus same key values get replaced.
 // Note: if a key has no value, it is not added into the Headers, by original
 // package design.
-func buildHeaders(heads string) http.Header {
+func buildHeaders(heads string) (http.Header, error) {
 
 	heads = strings.Replace(heads, `\n`, "\n", -1)
 	h := http.Header{}
@@ -114,5 +114,5 @@ func buildHeaders(heads string) http.Header {
 		}
 	}
 
-	return h
+	return h, nil
 }
