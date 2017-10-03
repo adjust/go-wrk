@@ -39,7 +39,7 @@ with the flags being
     -m="GET": the http request method
     -n=1000: the total number of calls processed
     -t=1: the numbers of threads used
-    -b="" the http requst body
+    -b="" the http request body
 ```
 for example
 ```
