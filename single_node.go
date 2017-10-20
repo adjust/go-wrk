@@ -1,36 +1,36 @@
 package main
 
 import (
-	"sync"
+    "sync"
 )
 
 func SingleNode(toCall string) []byte {
-	responseChannel := make(chan *Response, *totalCalls*2)
+    responseChannel := make(chan *Response, *totalCalls*2)
 
-	benchTime := NewTimer()
-	benchTime.Reset()
-	//TODO check ulimit
-	wg := &sync.WaitGroup{}
+    benchTime := NewTimer()
+    benchTime.Reset()
+    //TODO check ulimit
+    wg := &sync.WaitGroup{}
 
-	for i := 0; i < *numConnections; i++ {
-		go StartClient(
-			toCall,
-			*headers,
-			*requestBody,
-			*method,
-			*disableKeepAlives,
-			responseChannel,
-			wg,
-			*totalCalls,
-		)
-		wg.Add(1)
-	}
+    for i := 0; i < *numConnections; i++ {
+        go StartClient(
+            toCall,
+            *headers,
+            *requestBody,
+            *method,
+            *disableKeepAlives,
+            responseChannel,
+            wg,
+            *totalCalls,
+        )
+        wg.Add(1)
+    }
 
-	wg.Wait()
+    wg.Wait()
 
-	result := CalcStats(
-		responseChannel,
-		benchTime.Duration(),
-	)
-	return result
+    result := CalcStats(
+        responseChannel,
+        benchTime.Duration(),
+    )
+    return result
 }
