@@ -22,10 +22,10 @@ type Stats struct {
     Errors      int64
 }
 
-func CalcStats(responseChannel chan *Response, duration int64) []byte {
+func CalcStats(responseChannel chan *Response, duration int64, url string) []byte {
 
     stats := &Stats{
-        Url:         target,
+        Url:         url,
         Connections: *numConnections,
         Threads:     *numThreads,
         Times:       make([]int, len(responseChannel)),
@@ -71,39 +71,6 @@ func CalcStats(responseChannel chan *Response, duration int64) []byte {
         fmt.Println(err)
     }
     return b
-}
-
-func CalcDistStats(distChan chan string) {
-    if len(distChan) == 0 {
-        return
-    }
-    allStats := &Stats{
-        Url:         target,
-        Connections: *numConnections,
-        Threads:     *numThreads,
-    }
-    statCount := len(distChan)
-    for res := range distChan {
-        var stats Stats
-        err := json.Unmarshal([]byte(res), &stats)
-        if err != nil {
-            fmt.Println(err)
-        }
-        allStats.Duration += stats.Duration
-        allStats.Sum += stats.Sum
-        allStats.Times = append(allStats.Times, stats.Times...)
-        allStats.Resp200 += stats.Resp200
-        allStats.Resp300 += stats.Resp300
-        allStats.Resp400 += stats.Resp400
-        allStats.Resp500 += stats.Resp500
-        allStats.Errors += stats.Errors
-
-        if len(distChan) == 0 {
-            break
-        }
-    }
-    allStats.AvgDuration = allStats.Duration / float64(statCount)
-    PrintStats(allStats)
 }
 
 func PrintStats(allStats *Stats) {

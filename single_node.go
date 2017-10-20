@@ -2,17 +2,18 @@ package main
 
 import (
     "sync"
+    "fmt"
 )
 
-func SingleNode(toCall string) []byte {
-    responseChannel := make(chan *Response, *totalCalls*2)
+func SingleNode(toCall string, numConnections, totalCalls int) []byte {
+    responseChannel := make(chan *Response, totalCalls*2)
 
     benchTime := NewTimer()
     benchTime.Reset()
     //TODO check ulimit
     wg := &sync.WaitGroup{}
 
-    for i := 0; i < *numConnections; i++ {
+    for i := 0; i < numConnections; i++ {
         go StartClient(
             toCall,
             *headers,
@@ -21,16 +22,20 @@ func SingleNode(toCall string) []byte {
             *disableKeepAlives,
             responseChannel,
             wg,
-            *totalCalls,
+            totalCalls,
         )
         wg.Add(1)
     }
 
+    fmt.Println("WAITING")
     wg.Wait()
+
+    fmt.Println("HELELHELEHLEHLEH")
 
     result := CalcStats(
         responseChannel,
         benchTime.Duration(),
+        toCall,
     )
     return result
 }

@@ -9,11 +9,12 @@ import (
     "runtime"
 )
 
-type Config struct {
-    Port  string
-    Nodes []string
+type TPSReport struct {
+    Urls []string
+    TotalCalls []int
+    Threads int
+    NumConnections []int
 }
-
 var (
     numThreads        = flag.Int("t", 1, "the numbers of threads used")
     method            = flag.String("m", "GET", "the http request method")
@@ -21,37 +22,41 @@ var (
     numConnections    = flag.Int("c", 100, "the max numbers of connections used")
     totalCalls        = flag.Int("n", 1000, "the total number of calls processed")
     disableKeepAlives = flag.Bool("k", true, "if keep-alives are disabled")
-    dist              = flag.String("d", "", "dist mode")
     configFile        = flag.String("f", "", "json config file")
-    config            Config
-    target            string
     headers           = flag.String("H", "User-Agent: go-wrk 0.1 bechmark\nContent-Type: text/html;", "the http headers sent separated by '\\n'")
     certFile          = flag.String("cert", "someCertFile", "A PEM eoncoded certificate file.")
     keyFile           = flag.String("key", "someKeyFile", "A PEM encoded private key file.")
     caFile            = flag.String("CA", "someCertCAFile", "A PEM eoncoded CA's certificate file.")
-    insecure          = flag.Bool("i", false, "TLS checks are disabled")
+    insecure          = flag.Bool("i", true, "TLS checks are disabled")
+    tps TPSReport
 )
 
+
 func init() {
-    flag.Parse()
-    target = os.Args[len(os.Args)-1]
-    if *configFile != "" {
-        readConfig()
+    //flag.Parse()
+    //target = os.Args[len(os.Args)-1]
+    configFile := os.Args[len(os.Args)-1]
+    if configFile != "" {
+        readConfig(configFile)
     }
-    runtime.GOMAXPROCS(*numThreads)
+    runtime.GOMAXPROCS(tps.Threads)
 }
 
-func readConfig() {
-    configData, err := ioutil.ReadFile(*configFile)
+func readConfig(configFile string) {
+    configData, err := ioutil.ReadFile(configFile)
     if err != nil {
         fmt.Println(err)
     }
-    err = json.Unmarshal(configData, &config)
+    err = json.Unmarshal(configData, &tps)
     if err != nil {
         fmt.Println(err)
     }
 }
 
 func main() {
-    SingleNode(target)
+    for i, url := range tps.Urls {
+        fmt.Println("hitting" + url)
+        go SingleNode(url, tps.NumConnections[i], tps.TotalCalls[i])
+    }
+    for {}
 }
