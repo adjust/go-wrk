@@ -15,6 +15,11 @@ func SingleNode(toCall string, numConnections, totalCalls int, isWarmup bool) []
     //TODO check ulimit
     wg := &sync.WaitGroup{}
 
+    dka := *disableKeepAlives
+    if isWarmup {
+        dka = false
+    }
+
     for i := 0; i < numConnections; i++ {
         fmt.Println("Starting connection " + strconv.Itoa(i) + " to " + toCall)
         wg.Add(1)
@@ -23,7 +28,7 @@ func SingleNode(toCall string, numConnections, totalCalls int, isWarmup bool) []
             *headers,
             *requestBody,
             *method,
-            *disableKeepAlives,
+            dka,
             responseChannel,
             wg,
             totalCalls,
