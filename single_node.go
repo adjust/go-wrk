@@ -3,9 +3,11 @@ package main
 import (
     "sync"
     "fmt"
+    "strconv"
 )
 
-func SingleNode(toCall string, numConnections, totalCalls int) []byte {
+func SingleNode(toCall string, numConnections, totalCalls int, isWarmup bool) []byte {
+    // totalCalls*2 probably so that the channel can hold resquests+responses
     responseChannel := make(chan *Response, totalCalls*2)
 
     benchTime := NewTimer()
@@ -14,6 +16,8 @@ func SingleNode(toCall string, numConnections, totalCalls int) []byte {
     wg := &sync.WaitGroup{}
 
     for i := 0; i < numConnections; i++ {
+        fmt.Println("Starting connection " + strconv.Itoa(i) + " to " + toCall)
+        wg.Add(1)
         go StartClient(
             toCall,
             *headers,
@@ -24,18 +28,28 @@ func SingleNode(toCall string, numConnections, totalCalls int) []byte {
             wg,
             totalCalls,
         )
-        wg.Add(1)
     }
 
-    fmt.Println("WAITING")
     wg.Wait()
 
-    fmt.Println("HELELHELEHLEHLEH")
+    result := make([]byte, 0)
 
-    result := CalcStats(
-        responseChannel,
-        benchTime.Duration(),
-        toCall,
-    )
+    fmt.Println("MADE IT BEFORE STATISTICS")
+    
+    if !isWarmup {
+        fmt.Println("PRINTING STATS")
+        result = CalcStats(
+            responseChannel,
+            benchTime.Duration(),
+            toCall,
+        )
+    }
+
+    //result = CalcStats(
+      //  responseChannel,
+        //benchTime.Duration(),
+        //toCall,
+    //)
+
     return result
 }

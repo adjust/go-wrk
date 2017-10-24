@@ -9,6 +9,7 @@ import (
     "net/url"
     "strings"
     "sync"
+    "fmt"
 )
 
 func StartClient(url_, heads, requestBody string, meth string, dka bool, responseChan chan *Response, waitGroup *sync.WaitGroup, tc int) {
@@ -54,6 +55,7 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
 
     timer := NewTimer()
     for {
+        fmt.Println("Sending request to " + url_)
         requestBodyReader := strings.NewReader(requestBody)
         req, _ := http.NewRequest(meth, url_, requestBodyReader)
         sets := strings.Split(heads, "\n")
@@ -67,9 +69,9 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
         }
 
         timer.Reset()
-
+        fmt.Println("what about here")
         resp, err := tr.RoundTrip(req)
-
+        fmt.Println("made it here")
         respObj := &Response{}
 
         if err != nil {
@@ -93,5 +95,9 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
             break
         }
         responseChan <- respObj
+
+        fmt.Println("uh oh")
     }
+
+    fmt.Println("Done sending request to " + url_)
 }
