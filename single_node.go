@@ -15,6 +15,7 @@ func SingleNode(toCall string, numConnections, totalCalls int, isWarmup bool) []
     //TODO check ulimit
     wg := &sync.WaitGroup{}
 
+    // Allow reuse of TCP connection after warmup sequence
     dka := *disableKeepAlives
     if isWarmup {
         dka = false
@@ -22,6 +23,7 @@ func SingleNode(toCall string, numConnections, totalCalls int, isWarmup bool) []
 
     for i := 0; i < numConnections; i++ {
         fmt.Println("Starting connection " + strconv.Itoa(i) + " to " + toCall)
+        
         wg.Add(1)
         go StartClient(
             toCall,
@@ -37,24 +39,16 @@ func SingleNode(toCall string, numConnections, totalCalls int, isWarmup bool) []
 
     wg.Wait()
 
+    // initialize empty byte array incase of warmup
     result := make([]byte, 0)
 
-    fmt.Println("MADE IT BEFORE STATISTICS")
-    
     if !isWarmup {
-        fmt.Println("PRINTING STATS")
         result = CalcStats(
             responseChannel,
             benchTime.Duration(),
             toCall,
         )
     }
-
-    //result = CalcStats(
-      //  responseChannel,
-        //benchTime.Duration(),
-        //toCall,
-    //)
 
     return result
 }

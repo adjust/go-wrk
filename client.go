@@ -69,9 +69,8 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
         }
 
         timer.Reset()
-        fmt.Println("what about here")
+        
         resp, err := tr.RoundTrip(req)
-        fmt.Println("made it here")
         respObj := &Response{}
 
         if err != nil {
@@ -95,9 +94,6 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
             break
         }
         responseChan <- respObj
-
-        fmt.Println("uh oh")
     }
 
-    fmt.Println("Done sending request to " + url_)
 }

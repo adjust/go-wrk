@@ -1,6 +1,6 @@
 {
     "Urls": ["https://students.ucsd.edu", "https://students.ucsd.edu/academics/advising"],
-    "TotalCalls": [10, 10],
-    "Threads": 10,
-    "NumConnections": [4,4]
+    "TotalCalls": [1, 1],
+    "Threads": 3,
+    "NumConnections": [3,3]
 } 
