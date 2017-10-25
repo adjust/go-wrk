@@ -57,7 +57,7 @@ func main() {
     // warmup cache on first route
     // TODO: may want to make this more general in case Urls[0] is not always the first one hit
     fmt.Println("Warming up cache on route " + tps.Urls[0])
-    SingleNode(tps.Urls[0], 1, 10, true)
+    SingleNode(tps.Urls[0], 10, 1000, true)
     fmt.Println("Warmup complete")
 
     for i, url := range tps.Urls {

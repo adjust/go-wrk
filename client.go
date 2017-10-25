@@ -9,7 +9,6 @@ import (
     "net/url"
     "strings"
     "sync"
-    "fmt"
 )
 
 func StartClient(url_, heads, requestBody string, meth string, dka bool, responseChan chan *Response, waitGroup *sync.WaitGroup, tc int) {
@@ -55,7 +54,7 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
 
     timer := NewTimer()
     for {
-        fmt.Println("Sending request to " + url_)
+        //fmt.Println("Sending request to " + url_)
         requestBodyReader := strings.NewReader(requestBody)
         req, _ := http.NewRequest(meth, url_, requestBodyReader)
         sets := strings.Split(heads, "\n")
