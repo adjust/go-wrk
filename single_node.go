@@ -1,36 +1,54 @@
 package main
 
 import (
-	"sync"
+    "sync"
+    "fmt"
+    "strconv"
 )
 
-func SingleNode(toCall string) []byte {
-	responseChannel := make(chan *Response, *totalCalls*2)
+func SingleNode(toCall string, numConnections, totalCalls int, isWarmup bool) []byte {
+    // totalCalls*2 probably so that the channel can hold resquests+responses
+    responseChannel := make(chan *Response, totalCalls*2)
 
-	benchTime := NewTimer()
-	benchTime.Reset()
-	//TODO check ulimit
-	wg := &sync.WaitGroup{}
+    benchTime := NewTimer()
+    benchTime.Reset()
+    //TODO check ulimit
+    wg := &sync.WaitGroup{}
 
-	for i := 0; i < *numConnections; i++ {
-		go StartClient(
-			toCall,
-			*headers,
-			*requestBody,
-			*method,
-			*disableKeepAlives,
-			responseChannel,
-			wg,
-			*totalCalls,
-		)
-		wg.Add(1)
-	}
+    // Allow reuse of TCP connection after warmup sequence
+    dka := *disableKeepAlives
+    if isWarmup {
+        dka = false
+    }
 
-	wg.Wait()
+    for i := 0; i < numConnections; i++ {
+        fmt.Println("Starting connection " + strconv.Itoa(i) + " to " + toCall)
+        
+        wg.Add(1)
+        go StartClient(
+            toCall,
+            *headers,
+            *requestBody,
+            *method,
+            dka,
+            responseChannel,
+            wg,
+            totalCalls,
+        )
+    }
 
-	result := CalcStats(
-		responseChannel,
-		benchTime.Duration(),
-	)
-	return result
+    wg.Wait()
+
+    // initialize empty byte array incase of warmup
+    result := make([]byte, 0)
+
+    if !isWarmup {
+        result = CalcStats(
+            responseChannel,
+            benchTime.Duration(),
+            toCall,
+        )
+    }
+
+    return result
 }
