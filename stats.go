@@ -124,7 +124,7 @@ func PrintStats(allStats *Stats) {
 	fmt.Printf("Slowest time for request:\t%.2fms\n\n", float64(allStats.Times[totalInt-1]/1000))
 	fmt.Println("=============================DATA=============================")
 	fmt.Printf("Total response body sizes:\t\t%d\n", allStats.Transfered)
-	fmt.Printf("Avg response body per request:\t\t%.2fms\n", float64(allStats.Transfered)/total)
+	fmt.Printf("Avg response body per request:\t\t%.2f Byte\n", float64(allStats.Transfered)/total)
 	tr := float64(allStats.Transfered) / (allStats.AvgDuration / 1E6)
 	fmt.Printf("Transfer rate per second:\t\t%.2f Byte/s (%.2f MByte/s)\n", tr, tr/1E6)
 	fmt.Println("==========================RESPONSES==========================")
