@@ -18,6 +18,7 @@ var (
 	numThreads        = flag.Int("t", 1, "the numbers of threads used")
 	method            = flag.String("m", "GET", "the http request method")
 	requestBody       = flag.String("b", "", "the http requst body")
+	requestBodyFile   = flag.String("p", "", "the http requst body data file")
 	numConnections    = flag.Int("c", 100, "the max numbers of connections used")
 	totalCalls        = flag.Int("n", 1000, "the total number of calls processed")
 	disableKeepAlives = flag.Bool("k", true, "if keep-alives are disabled")
@@ -45,14 +46,37 @@ func readConfig() {
 	configData, err := ioutil.ReadFile(*configFile)
 	if err != nil {
 		fmt.Println(err)
+		panic(err)
 	}
 	err = json.Unmarshal(configData, &config)
 	if err != nil {
 		fmt.Println(err)
+		panic(err)
 	}
 }
 
+func setRequestBody() {
+	// requestBody has been setup and it has highest priority
+	if *requestBody != "" {
+		return
+	}
+
+	if *requestBodyFile == "" {
+		return
+	}
+
+	// requestBodyFile has been setup
+	data, err := ioutil.ReadFile(*requestBodyFile)
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+	body := string(data)
+	requestBody = &body
+}
+
 func main() {
+	setRequestBody()
 	switch *dist {
 	case "m":
 		MasterNode()
