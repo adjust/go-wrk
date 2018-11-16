@@ -82,8 +82,15 @@ func StartClient(url_, heads, requestBody string, meth string, dka bool, respons
 				}
 			} else {
 				respObj.Size = resp.ContentLength
+				if *respContains != "" {
+					data, err := ioutil.ReadAll(resp.Body)
+					if err == nil {
+						respObj.Body = string(data)
+					}
+				}
 			}
 			respObj.StatusCode = resp.StatusCode
+
 			resp.Body.Close()
 		}
 

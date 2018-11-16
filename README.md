@@ -40,6 +40,7 @@ with the flags being
     -n=1000: the total number of calls processed
     -t=1: the numbers of threads used
     -b="" the http request body
+    -s="" if specified, it counts how often the searched string s is contained in the responses
 ```
 for example
 ```
@@ -70,6 +71,7 @@ Slowest time for request:	1698.00ms
 30X responses:		0	(0%)
 40X responses:		0	(0%)
 50X responses:		0	(0%)
+matchResponses:     100000  (100.00%)
 ```
 
 ## License

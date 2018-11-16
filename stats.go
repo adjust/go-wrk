@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"sort"
+	"strings"
 )
 
 type Stats struct {
@@ -20,6 +22,7 @@ type Stats struct {
 	Resp400     int64
 	Resp500     int64
 	Errors      int64
+	Contains    int64
 }
 
 func CalcStats(responseChannel chan *Response, duration int64) []byte {
@@ -31,6 +34,10 @@ func CalcStats(responseChannel chan *Response, duration int64) []byte {
 		Times:       make([]int, len(responseChannel)),
 		Duration:    float64(duration),
 		AvgDuration: float64(duration),
+	}
+
+	if *respContains != "" {
+		log.Printf("search in response for: %v", *respContains)
 	}
 
 	i := 0
@@ -46,6 +53,10 @@ func CalcStats(responseChannel chan *Response, duration int64) []byte {
 			stats.Resp400++
 		case res.StatusCode < 600:
 			stats.Resp500++
+		}
+
+		if *respContains != "" && strings.Contains(res.Body, *respContains) {
+			stats.Contains++
 		}
 
 		stats.Sum += float64(res.Duration)
@@ -97,6 +108,7 @@ func CalcDistStats(distChan chan string) {
 		allStats.Resp400 += stats.Resp400
 		allStats.Resp500 += stats.Resp500
 		allStats.Errors += stats.Errors
+		allStats.Contains += stats.Contains
 
 		if len(distChan) == 0 {
 			break
@@ -132,5 +144,8 @@ func PrintStats(allStats *Stats) {
 	fmt.Printf("30X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp300, float64(allStats.Resp300)/total*1e2)
 	fmt.Printf("40X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp400, float64(allStats.Resp400)/total*1e2)
 	fmt.Printf("50X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp500, float64(allStats.Resp500)/total*1e2)
+	if *respContains != "" {
+		fmt.Printf("matchResponses:\t\t%d\t(%.2f%%)\n", allStats.Contains, float64(allStats.Contains)/total*1e2)
+	}
 	fmt.Printf("Errors:\t\t\t%d\t(%.2f%%)\n", allStats.Errors, float64(allStats.Errors)/total*1e2)
 }

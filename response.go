@@ -5,4 +5,5 @@ type Response struct {
 	Duration   int64
 	StatusCode int
 	Error      bool
+	Body       string
 }
