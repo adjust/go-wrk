@@ -31,6 +31,7 @@ var (
 	keyFile           = flag.String("key", "someKeyFile", "A PEM encoded private key file.")
 	caFile            = flag.String("CA", "someCertCAFile", "A PEM eoncoded CA's certificate file.")
 	insecure          = flag.Bool("i", false, "TLS checks are disabled")
+	respContains      = flag.String("s", "", "if specified, it counts how often the searched string s is contained in the responses")
 )
 
 func init() {
