@@ -16,7 +16,7 @@ type Stats struct {
 	Duration    float64
 	Sum         float64
 	Times       []int
-	Transfered  int64
+	Transferred int64
 	Resp200     int64
 	Resp300     int64
 	Resp400     int64
@@ -63,7 +63,7 @@ func CalcStats(responseChannel chan *Response, duration int64) []byte {
 		stats.Times[i] = int(res.Duration)
 		i++
 
-		stats.Transfered += res.Size
+		stats.Transferred += res.Size
 
 		if res.Error {
 			stats.Errors++
@@ -135,9 +135,9 @@ func PrintStats(allStats *Stats) {
 	fmt.Printf("99th percentile time:\t\t%.2fms\n", float64(allStats.Times[(totalInt/100*99)])/1000)
 	fmt.Printf("Slowest time for request:\t%.2fms\n\n", float64(allStats.Times[totalInt-1]/1000))
 	fmt.Println("=============================DATA=============================")
-	fmt.Printf("Total response body sizes:\t\t%d\n", allStats.Transfered)
-	fmt.Printf("Avg response body per request:\t\t%.2f Byte\n", float64(allStats.Transfered)/total)
-	tr := float64(allStats.Transfered) / (allStats.AvgDuration / 1E6)
+	fmt.Printf("Total response body sizes:\t\t%d\n", allStats.Transferred)
+	fmt.Printf("Avg response body per request:\t\t%.2f Byte\n", float64(allStats.Transferred)/total)
+	tr := float64(allStats.Transferred) / (allStats.AvgDuration / 1E6)
 	fmt.Printf("Transfer rate per second:\t\t%.2f Byte/s (%.2f MByte/s)\n", tr, tr/1E6)
 	fmt.Println("==========================RESPONSES==========================")
 	fmt.Printf("20X Responses:\t\t%d\t(%.2f%%)\n", allStats.Resp200, float64(allStats.Resp200)/total*1e2)
