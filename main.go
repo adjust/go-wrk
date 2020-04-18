@@ -17,8 +17,8 @@ type Config struct {
 var (
 	numThreads        = flag.Int("t", 1, "the numbers of threads used")
 	method            = flag.String("m", "GET", "the http request method")
-	requestBody       = flag.String("b", "", "the http requst body")
-	requestBodyFile   = flag.String("p", "", "the http requst body data file")
+	requestBody       = flag.String("b", "", "the http request body")
+	requestBodyFile   = flag.String("p", "", "the http request body data file")
 	numConnections    = flag.Int("c", 100, "the max numbers of connections used")
 	totalCalls        = flag.Int("n", 1000, "the total number of calls processed")
 	disableKeepAlives = flag.Bool("k", true, "if keep-alives are disabled")
@@ -26,7 +26,7 @@ var (
 	configFile        = flag.String("f", "", "json config file")
 	config            Config
 	target            string
-	headers           = flag.String("H", "User-Agent: go-wrk 0.1 bechmark\nContent-Type: text/html;", "the http headers sent separated by '\\n'")
+	headers           = flag.String("H", "User-Agent: go-wrk 0.1 benchmark\nContent-Type: text/html;", "the http headers sent separated by '\\n'")
 	certFile          = flag.String("cert", "someCertFile", "A PEM eoncoded certificate file.")
 	keyFile           = flag.String("key", "someKeyFile", "A PEM encoded private key file.")
 	caFile            = flag.String("CA", "someCertCAFile", "A PEM eoncoded CA's certificate file.")
