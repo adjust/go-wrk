@@ -32,6 +32,7 @@ var (
 	caFile            = flag.String("CA", "someCertCAFile", "A PEM eoncoded CA's certificate file.")
 	insecure          = flag.Bool("i", false, "TLS checks are disabled")
 	respContains      = flag.String("s", "", "if specified, it counts how often the searched string s is contained in the responses")
+	readAll           = flag.Bool("r", false, "in the case of having stream or file in the response,\n it reads all response body to calculate the response size")
 )
 
 func init() {
@@ -77,6 +78,10 @@ func setRequestBody() {
 }
 
 func main() {
+	if len(os.Args) == 1 { //If no argument specified
+		flag.Usage() //Print usage
+		os.Exit(1)
+	}
 	setRequestBody()
 	switch *dist {
 	case "m":
