@@ -27,9 +27,9 @@ var (
 	config            Config
 	target            string
 	headers           = flag.String("H", "User-Agent: go-wrk 0.1 benchmark\nContent-Type: text/html;", "the http headers sent separated by '\\n'")
-	certFile          = flag.String("cert", "someCertFile", "A PEM eoncoded certificate file.")
+	certFile          = flag.String("cert", "someCertFile", "A PEM encoded certificate file.")
 	keyFile           = flag.String("key", "someKeyFile", "A PEM encoded private key file.")
-	caFile            = flag.String("CA", "someCertCAFile", "A PEM eoncoded CA's certificate file.")
+	caFile            = flag.String("CA", "someCertCAFile", "A PEM encode CA's certificate file.")
 	insecure          = flag.Bool("i", false, "TLS checks are disabled")
 	respContains      = flag.String("s", "", "if specified, it counts how often the searched string s is contained in the responses")
 	readAll           = flag.Bool("r", false, "in the case of having stream or file in the response,\n it reads all response body to calculate the response size")
